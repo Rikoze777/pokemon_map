@@ -29,8 +29,6 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 
 def show_all_pokemons(request):
-    # relative_image_path = pokemon.image.url
-    # absolute_uri = request.build_absolute_uri(relative_image_path)
     with open('pokemon_entities/pokemons.json', encoding='utf-8') as database:
         pokemons = json.load(database)['pokemons']
 
@@ -46,8 +44,11 @@ def show_all_pokemons(request):
     pokemons_on = Pokemons.objects.all()
     pokemons_on_page = []
     for pokemon in pokemons_on:
-        relative_image_path = pokemon.image.url
-        absolute_uri = request.build_absolute_uri(relative_image_path)
+        try:
+            relative_image_path = pokemon.image.url
+            absolute_uri = request.build_absolute_uri(relative_image_path)
+        except ValueError:
+            absolute_uri = request.build_absolute_uri()
         pokemons_on_page.append({
             'pokemon_id': pokemon.id,
             'img_url': absolute_uri,
