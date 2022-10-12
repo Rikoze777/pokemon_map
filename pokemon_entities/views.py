@@ -72,18 +72,12 @@ def show_pokemon(request, pokemon_id):
     
     relative_image_path = pokemon_entity.name.image.url
     absolute_uri = request.build_absolute_uri(relative_image_path)
-    # for pokemon in pokemons:
-    #     if pokemon['pokemon_id'] == int(pokemon_id):
-    #         requested_pokemon = pokemon
-    #         break
-    # else:
-    #     return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
-
 
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     pokemon = {
         "pokemon_id": pokemon_entity.name.id,
         "title_ru": pokemon_entity.name.title,
+        "description": pokemon_entity.name.description,
         "img_url": absolute_uri
     }
     add_pokemon(
