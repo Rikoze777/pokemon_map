@@ -8,13 +8,15 @@ class Pokemons(models.Model):
     title_jp = models.CharField(max_length=200, null=True)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='image', blank=True)
+    previous_evolution = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="previous")
+    next_evolution = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="next")
 
     def __str__(self):
         return self.title
 
 
 class PokemonEntity(models.Model):
-    name = models.ForeignKey(Pokemons, null=True, on_delete=models.SET_NULL)
+    name = models.ForeignKey(Pokemons, null=True, on_delete=models.SET_NULL, related_name="Покемон")
     lat = models.FloatField(blank=True)
     lon = models.FloatField(blank=True)
     appeared_at = models.DateTimeField(blank=True, null=True)
@@ -24,6 +26,7 @@ class PokemonEntity(models.Model):
     strength = models.IntegerField(blank=True, null=True)
     defence = models.IntegerField(blank=True, null=True)
     stamina = models.IntegerField(blank=True, null=True)
+
 
     def __str__(self):
         return f"{self.name}  lat-{self.lat}  lon-{self.lon}"
