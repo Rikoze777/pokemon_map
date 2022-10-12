@@ -1,6 +1,5 @@
 from email.utils import localtime
 import folium
-import json
 
 from django.shortcuts import render, get_object_or_404
 from .models import PokemonEntity, Pokemons
@@ -29,8 +28,8 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 def show_all_pokemons(request):
     time_now = localtime()
-    pokemon_entities = PokemonEntity.objects.filter(appeared_at__lt=time_now, disappeared_at__gt=time_now)
-    
+    pokemon_entities = PokemonEntity.objects.filter(appeared_at__lt=time_now,
+                                                disappeared_at__gt=time_now)
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     pokemons_on_page = []
     for pokemon_entity in pokemon_entities:
@@ -76,7 +75,9 @@ def show_pokemon(request, pokemon_id):
         requested_pokemon["previous_evolution"] = {
             "title_ru": pokemon.previous_evolution.title,
             "pokemon_id": pokemon.previous_evolution.id,
-            "img_url": request.build_absolute_uri(pokemon.previous_evolution.image.url),
+            "img_url": request.build_absolute_uri(
+                pokemon.previous_evolution.image.url
+            ),
         }
 
     next_evolution = pokemon.next_evolutions.first()
@@ -87,7 +88,6 @@ def show_pokemon(request, pokemon_id):
             "pokemon_id": next_evolution.id,
             "img_url": request.build_absolute_uri(next_evolution.image.url),
         }
-    
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
 
     for entity in requested_pokemon["entities"]:
