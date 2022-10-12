@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 
 class Pokemons(models.Model):
     id = models.AutoField(primary_key=True)
@@ -16,10 +16,10 @@ class Pokemons(models.Model):
 
 class PokemonEntity(models.Model):
     name = models.ForeignKey(Pokemons, null=True, on_delete=models.SET_NULL, related_name="entities", verbose_name='Связь с моделью покемона')
-    lat = models.FloatField(blank=True, verbose_name='Широта')
-    lon = models.FloatField(blank=True, verbose_name='Долгота')
-    appeared_at = models.DateTimeField(blank=True, null=True, verbose_name='Время появления')
-    disappeared_at = models.DateTimeField(blank=True, null=True, verbose_name='Время исчезновения')
+    lat = models.FloatField(verbose_name='Широта')
+    lon = models.FloatField(verbose_name='Долгота')
+    appeared_at = models.DateTimeField(default=timezone.now, verbose_name='Время появления')
+    disappeared_at = models.DateTimeField(default=timezone.now, verbose_name='Время исчезновения')
     level = models.IntegerField(blank=True, null=True, verbose_name='Уровень')
     health = models.IntegerField(blank=True, null=True, verbose_name='Здоровье')
     strength = models.IntegerField(blank=True, null=True, verbose_name='Сила')
