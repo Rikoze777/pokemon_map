@@ -1,10 +1,8 @@
+from email.utils import localtime
 import folium
 import json
 
-from django.http import HttpResponseNotFound
-from django.shortcuts import render
-from django.utils import timezone
-
+from django.shortcuts import render, get_object_or_404
 from .models import PokemonEntity, Pokemons
 
 
@@ -30,9 +28,8 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 
 def show_all_pokemons(request):
-    time_now = timezone.now()
-    time_new = timezone.localtime(time_now)
-    pokemon_entities = PokemonEntity.objects.filter(appeared_at__lt=time_new, disappeared_at__gt=time_new)
+    time_now = localtime()
+    pokemon_entities = PokemonEntity.objects.filter(appeared_at__lt=time_now, disappeared_at__gt=time_now)
     
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     pokemons_on_page = []
@@ -60,27 +57,47 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    pokemon_entity = PokemonEntity.objects.get(id=pokemon_id)
-    pokemon_show = Pokemons.objects.get(id=pokemon_id)
-    relative_image_path = pokemon_show.image.url
-    relative_uri = request.build_absolute_uri(relative_image_path)
-    folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    pokemon = {
-        "pokemon_id": pokemon_show.id,
-        "title_ru": pokemon_show.title,
-        "title_en": pokemon_show.title_en,
-        "title_jp": pokemon_show.title_jp,
-        "description": pokemon_entity.name.description,
-        "img_url": relative_uri,
-        "previous_evolution": pokemon_show.previous_evolution,
-        "next_evolution": pokemon_show.next_evolution,
+    time_now = localtime()
+
+    pokemon = get_object_or_404(Pokemons, id=pokemon_id)
+
+    requested_pokemon = {
+        "title_ru": pokemon.title,
+        "title_en": pokemon.title_en,
+        "title_jp": pokemon.title_jp,
+        "img_url": request.build_absolute_uri(pokemon.image.url),
+        "description": pokemon.description,
+        "entities": pokemon.entities.filter(
+            appeared_at__lt=time_now, disappeared_at__gt=time_now
+        ).values(),
     }
-    add_pokemon(
-                folium_map, pokemon_entity.lat,
-                pokemon_entity.lon,
-                relative_uri,
-            )
+
+    if pokemon.previous_evolution:
+        requested_pokemon["previous_evolution"] = {
+            "title_ru": pokemon.previous_evolution.title,
+            "pokemon_id": pokemon.previous_evolution.id,
+            "img_url": request.build_absolute_uri(pokemon.previous_evolution.image.url),
+        }
+
+    next_evolution = pokemon.next_evolutions.first()
+
+    if next_evolution:
+        requested_pokemon["next_evolution"] = {
+            "title_ru": next_evolution.title,
+            "pokemon_id": next_evolution.id,
+            "img_url": request.build_absolute_uri(next_evolution.image.url),
+        }
+    
+    folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
+
+    for entity in requested_pokemon["entities"]:
+        add_pokemon(
+            folium_map,
+            entity["lat"],
+            entity["lon"],
+            requested_pokemon["img_url"],
+        )
 
     return render(request, 'pokemon.html', context={
-        'map': folium_map._repr_html_(), 'pokemon': pokemon
+        'map': folium_map._repr_html_(), 'pokemon': requested_pokemon
     })
