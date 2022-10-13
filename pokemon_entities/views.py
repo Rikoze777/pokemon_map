@@ -34,7 +34,7 @@ def show_all_pokemons(request):
     pokemons_on_page = []
     for pokemon_entity in pokemon_entities:
         try:
-            relative_image_path = pokemon_entity.name.image.url
+            relative_image_path = pokemon_entity.pokemon.image.url
             absolute_uri = request.build_absolute_uri(relative_image_path)
         except ValueError:
             absolute_uri = request.build_absolute_uri()
@@ -44,9 +44,9 @@ def show_all_pokemons(request):
             absolute_uri
         )
         pokemons_on_page.append({
-            'pokemon_id': pokemon_entity.name.id,
+            'pokemon_id': pokemon_entity.pokemon.id,
             'img_url': absolute_uri,
-            'title_ru': pokemon_entity.name.title,
+            'title_ru': pokemon_entity.pokemon.title,
         })
 
     return render(request, 'mainpage.html', context={
