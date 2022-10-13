@@ -3,7 +3,6 @@ from django.utils import timezone
 
 
 class Pokemons(models.Model):
-    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200,
                              verbose_name='Название покемона')
     title_en = models.CharField(max_length=200,
